@@ -1,13 +1,11 @@
 import Calendar from "./calendar";
-import TaskAdder from "./taskAdder";
 import Box from "@mui/material/Box";
 
-function TeacherPage() {
+function StudentPage() {
   return (
     <Box sx={{ width: "75%" }}>
       <Calendar />
-      <TaskAdder />
     </Box>
   );
 }
-export default TeacherPage;
+export default StudentPage;

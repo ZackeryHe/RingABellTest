@@ -40,15 +40,17 @@ function Calendar() {
           events={events}
           defaultDate={defaultDate}
           onSelectEvent={toggleSidebar}
-          style={{ height: 1200 }}
+          style={{ height: 1000 }}
+          views={["week", "day"]}
         ></BigCalendar>
       </div>
     );
   };
 
   const sideInfo = () => (
-    <Box sx={{ width: 300 }}>
-      <button>hello</button>
+    <Box sx={{ width: "100%", pl: 2 }}>
+      <text>zoom link</text>
+      <text>teacher name</text>
     </Box>
   );
 

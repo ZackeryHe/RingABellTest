@@ -13,13 +13,9 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { auth } from "./firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { Navigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormLabel from "@mui/material/FormLabel";
-
 function Copyright(props) {
   return (
     <Typography
@@ -40,7 +36,7 @@ function Copyright(props) {
 
 const theme = createTheme();
 
-export default function SignUpSide() {
+export default function LogInSide() {
   const [showError, setShowError] = React.useState(false);
   const [toCalendar, setToCalendar] = React.useState(false);
 
@@ -50,14 +46,8 @@ export default function SignUpSide() {
     console.log({
       email: data.get("email"),
       password: data.get("password"),
-
-      job: data.get("job"),
     });
-    createUserWithEmailAndPassword(
-      auth,
-      data.get("email"),
-      data.get("password")
-    )
+    signInWithEmailAndPassword(auth, data.get("email"), data.get("password"))
       .then((userCredential) => {
         // Signed in
         // const user = userCredential.user;
@@ -65,9 +55,6 @@ export default function SignUpSide() {
         setToCalendar(true);
       })
       .catch((error) => {
-        // const errorCode = error.code;
-        // const errorMessage = error.message;
-        // ..
         setShowError(true);
       });
   };
@@ -75,6 +62,7 @@ export default function SignUpSide() {
   return (
     <ThemeProvider theme={theme}>
       {toCalendar && <Navigate to="/calendar" />}
+
       <Grid container component="main" sx={{ height: "100vh" }}>
         <CssBaseline />
         <Grid
@@ -107,7 +95,7 @@ export default function SignUpSide() {
               <LockOutlinedIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
-              Sign up
+              Log in
             </Typography>
             <Box
               component="form"
@@ -115,11 +103,8 @@ export default function SignUpSide() {
               onSubmit={handleSubmit}
               sx={{ mt: 1 }}
             >
-              {showError && (
-                <Alert severity="error">
-                  There was an error in creating a new account
-                </Alert>
-              )}
+              {showError && <Alert severity="error"></Alert>}
+
               <TextField
                 margin="normal"
                 required
@@ -140,23 +125,6 @@ export default function SignUpSide() {
                 id="password"
                 autoComplete="current-password"
               />
-              <FormLabel id="demo-radio-buttons-group-label">I am a:</FormLabel>
-              <RadioGroup
-                aria-labelledby="demo-radio-buttons-group-label"
-                name="job"
-                row
-              >
-                <FormControlLabel
-                  value="student"
-                  control={<Radio />}
-                  label="Student"
-                />
-                <FormControlLabel
-                  value="teacher"
-                  control={<Radio />}
-                  label="Teacher"
-                />
-              </RadioGroup>
               <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}
                 label="Remember me"
@@ -167,7 +135,7 @@ export default function SignUpSide() {
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
               >
-                Sign Up
+                Log In
               </Button>
               <Grid container>
                 <Grid item xs>
@@ -176,8 +144,8 @@ export default function SignUpSide() {
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link href="/login" variant="body2">
-                    {"Already have an account? Sign In"}
+                  <Link href="/" variant="body2">
+                    {"Don't have an account? Sign up"}
                   </Link>
                 </Grid>
               </Grid>
