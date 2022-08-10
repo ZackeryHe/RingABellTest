@@ -1,4 +1,4 @@
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import { addDoc, collection } from "firebase/firestore";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
@@ -8,11 +8,16 @@ import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import Button from "@mui/material/Button";
-
+import Select from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
 function TaskAdder() {
   const [startValue, setStart] = useState(new Date());
   const [endValue, setEnd] = useState(new Date());
   const [subject, setSubject] = useState("");
+  const [desc, setDesc] = useState("");
   const [state, setState] = useState({
     showSidebar: false,
   });
@@ -23,6 +28,8 @@ function TaskAdder() {
       meeting_end_time: new Date(),
       meeting_start_time: new Date(),
       subject: subject,
+      description: desc,
+      createdBy: auth.currentUser.uid,
     });
   };
 
@@ -35,32 +42,48 @@ function TaskAdder() {
         }}
       >
         <div>
-          <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DateTimePicker
-              renderInput={(props) => <TextField {...props} />}
-              label="start time"
-              value={startValue}
+          <Stack>
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <DateTimePicker
+                renderInput={(props) => <TextField {...props} />}
+                label="start time"
+                value={startValue}
+                onChange={(newValue) => {
+                  setStart(newValue);
+                }}
+              />
+              <DateTimePicker
+                renderInput={(props) => <TextField {...props} />}
+                label="end time"
+                value={endValue}
+                onChange={(newValue) => {
+                  setEnd(newValue);
+                }}
+              />
+            </LocalizationProvider>
+            <TextField
+              label="description"
+              value={subject}
               onChange={(newValue) => {
-                setStart(newValue);
+                setDesc(newValue.target.value);
               }}
-            />
-            <DateTimePicker
-              renderInput={(props) => <TextField {...props} />}
-              label="end time"
-              value={endValue}
-              onChange={(newValue) => {
-                setEnd(newValue);
-              }}
-            />
-          </LocalizationProvider>
-          <TextField
-            label="subject name"
-            value={subject}
-            onChange={(newValue) => {
-              setSubject(newValue.target.value);
-            }}
-          ></TextField>
-          <Button onClick={handleSubmit}>Create event</Button>
+            ></TextField>
+            <FormControl>
+              <InputLabel id="demo-simple-select-label">Subject</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                label="hello"
+                id="demo-simple-select"
+                onChange={(newValue) => {
+                  setSubject(newValue);
+                }}
+              >
+                <MenuItem value={"English"}>English</MenuItem>
+                <MenuItem value={"Math"}>Math</MenuItem>
+              </Select>
+            </FormControl>
+            <Button onClick={handleSubmit}>Create event</Button>
+          </Stack>
         </div>
       </Box>
     );

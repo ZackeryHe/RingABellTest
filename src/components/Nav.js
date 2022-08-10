@@ -1,6 +1,9 @@
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import * as React from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -8,31 +11,48 @@ import Menu from "@mui/material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Link from "@mui/material/Link";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "./firebase";
 import Alert from "@mui/material/Alert";
 export default function Nav() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const [loginStatus, setStatus] = React.useState(null);
+  const [role, setRole] = React.useState(null);
+
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
   React.useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setStatus(true);
+        // const p = await isTeacher();
+        // console.log(isTeacher());
+        // if (p) setRole("tutor");
+        // else setRole("student");
+        const r = await getRole();
+        setRole(r);
       } else {
-        setStatus(false);
+        setRole("signed out");
       }
     });
   }, []);
+
+  async function getRole() {
+    let docRef = doc(db, "Tutors", auth.currentUser.uid);
+    let docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) return "tutor";
+    docRef = doc(db, "Students", auth.currentUser.uid);
+    docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) return "student";
+    //uh oh
+    else return "other";
+  }
+
   const handleClose = () => {
     setAnchorEl(null);
   };
   const handleLogout = () => {
     setAnchorEl(null);
-    const auth = getAuth();
     signOut(auth);
   };
   const UserMenu = (props) => {
@@ -52,8 +72,10 @@ export default function Nav() {
           <Link href="/account">
             <MenuItem onClick={handleClose}>My account</MenuItem>
           </Link>
-          <Link href="/calendar">
-            <MenuItem onClick={handleClose}>Calendar</MenuItem>
+          <Link href={"" + role + "s"}>
+            <MenuItem onClick={handleClose}>
+              {role === "tutor" ? "Tutor" : "Student"} Calendar
+            </MenuItem>
           </Link>
           <Link href="/login">
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
@@ -102,8 +124,10 @@ export default function Nav() {
           <UserMenu></UserMenu>
         </Toolbar>
       </AppBar>
-      {loginStatus && (
-        <Alert severity="success">You are currently logged in</Alert>
+      {(role === "tutor" || role === "student") && (
+        <Alert severity="success">
+          You are currently logged in as a {role}
+        </Alert>
       )}
     </Box>
   );

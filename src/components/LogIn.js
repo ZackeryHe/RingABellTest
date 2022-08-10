@@ -12,9 +12,10 @@ import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Navigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
 import Alert from "@mui/material/Alert";
 function Copyright(props) {
   return (
@@ -38,31 +39,43 @@ const theme = createTheme();
 
 export default function LogInSide() {
   const [showError, setShowError] = React.useState(false);
-  const [toCalendar, setToCalendar] = React.useState(false);
+  const [sendTo, setLocation] = React.useState(null);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     console.log({
       email: data.get("email"),
-      password: data.get("password"),
+      // password: data.get("password"),
     });
     signInWithEmailAndPassword(auth, data.get("email"), data.get("password"))
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         // Signed in
-        // const user = userCredential.user;
-        // ...
-        setToCalendar(true);
+        const r = await getRole();
+        if (r === "tutor") {
+          setLocation("/tutors");
+        } else if (r === "student") setLocation("/students");
       })
       .catch((error) => {
+        console.log(error);
         setShowError(true);
       });
   };
 
+  async function getRole() {
+    let docRef = doc(db, "Tutors", auth.currentUser.uid);
+    let docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) return "tutor";
+    docRef = doc(db, "Students", auth.currentUser.uid);
+    docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) return "student";
+    else return "other";
+  }
   return (
     <ThemeProvider theme={theme}>
-      {toCalendar && <Navigate to="/calendar" />}
-
+      {sendTo && <Navigate to={sendTo} />}
       <Grid container component="main" sx={{ height: "100vh" }}>
         <CssBaseline />
         <Grid
@@ -125,10 +138,10 @@ export default function LogInSide() {
                 id="password"
                 autoComplete="current-password"
               />
-              <FormControlLabel
+              {/* <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}
                 label="Remember me"
-              />
+              /> */}
               <Button
                 type="submit"
                 fullWidth

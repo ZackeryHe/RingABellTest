@@ -12,14 +12,14 @@ import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { Navigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormLabel from "@mui/material/FormLabel";
-
+import { doc, setDoc, getDoc } from "firebase/firestore";
 function Copyright(props) {
   return (
     <Typography
@@ -42,15 +42,14 @@ const theme = createTheme();
 
 export default function SignUpSide() {
   const [showError, setShowError] = React.useState(false);
-  const [toCalendar, setToCalendar] = React.useState(false);
+  const [sendTo, setLocation] = React.useState(null);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     console.log({
       email: data.get("email"),
-      password: data.get("password"),
-
+      // password: data.get("password"),
       job: data.get("job"),
     });
     createUserWithEmailAndPassword(
@@ -58,23 +57,42 @@ export default function SignUpSide() {
       data.get("email"),
       data.get("password")
     )
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         // Signed in
-        // const user = userCredential.user;
-        // ...
-        setToCalendar(true);
+        const uid = auth.currentUser.uid;
+        const colName = data.get("job");
+        await setDoc(
+          doc(db, colName, uid),
+          {
+            email: data.get("email"),
+          },
+          { merge: true }
+        );
+        const r = await getRole();
+        if (r === "tutor") {
+          setLocation("/tutors");
+        } else if (r === "student") setLocation("/students");
       })
       .catch((error) => {
-        // const errorCode = error.code;
-        // const errorMessage = error.message;
-        // ..
         setShowError(true);
       });
   };
 
+  async function getRole() {
+    let docRef = doc(db, "Tutors", auth.currentUser.uid);
+    let docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) return "tutor";
+    docRef = doc(db, "Students", auth.currentUser.uid);
+    docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) return "student";
+    else return "other";
+  }
+
   return (
     <ThemeProvider theme={theme}>
-      {toCalendar && <Navigate to="/calendar" />}
+      {sendTo && <Navigate to={sendTo} />}
       <Grid container component="main" sx={{ height: "100vh" }}>
         <CssBaseline />
         <Grid
@@ -147,20 +165,20 @@ export default function SignUpSide() {
                 row
               >
                 <FormControlLabel
-                  value="student"
+                  value="Students"
                   control={<Radio />}
                   label="Student"
                 />
                 <FormControlLabel
-                  value="teacher"
+                  value="Tutors"
                   control={<Radio />}
-                  label="Teacher"
+                  label="Tutor"
                 />
               </RadioGroup>
-              <FormControlLabel
+              {/* <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}
                 label="Remember me"
-              />
+              /> */}
               <Button
                 type="submit"
                 fullWidth

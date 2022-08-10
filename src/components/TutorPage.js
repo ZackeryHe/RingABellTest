@@ -1,11 +1,12 @@
 import Calendar from "./calendar";
+import TaskAdder from "./taskAdder";
 import Box from "@mui/material/Box";
 import { Navigate } from "react-router-dom";
 import * as React from "react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-function StudentPage() {
+function TeacherPage() {
   const [role, setRole] = React.useState(null);
 
   React.useEffect(() => {
@@ -32,14 +33,15 @@ function StudentPage() {
   }
   return (
     <div>
-      {role === "student" && (
+      {role === "tutor" && (
         <Box sx={{ width: "75%" }}>
           <Calendar />
+          <TaskAdder />
         </Box>
       )}
-      {role === "tutor" && <Navigate to="/tutors" />}
+      {role === "student" && <Navigate to="/students" />}
       {(role === "signed out" || role === "other") && <Navigate to="/login" />}
     </div>
   );
 }
-export default StudentPage;
+export default TeacherPage;

@@ -47,17 +47,13 @@ function Calendar() {
     );
   };
 
-  const sideInfo = () => (
-    <Box sx={{ width: "100%", pl: 2 }}>
-      <text>zoom link</text>
-      <text>teacher name</text>
-    </Box>
-  );
-
   const SideBar = (props) => (
     <div>
       <Drawer anchor={"right"} open={state.showSidebar} onClose={toggleSidebar}>
-        {sideInfo()}
+        <Box sx={{ width: "100%", pl: 2 }}>
+          <text>zoom link</text>
+          <text>tutor name</text>
+        </Box>
       </Drawer>
     </div>
   );
