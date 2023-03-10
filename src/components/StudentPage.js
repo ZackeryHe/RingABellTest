@@ -1,45 +1,22 @@
 import Calendar from "./calendar";
-import Box from "@mui/material/Box";
-import { Navigate } from "react-router-dom";
+import Nav from "./Nav";
+import { ThemeProvider } from "@mui/material/styles";
 import * as React from "react";
-import { auth, db } from "./firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import theme from "../theme";
+import Grid from "@mui/material/Grid";
+import Container from "@mui/material/Container";
 function StudentPage() {
-  const [role, setRole] = React.useState(null);
-
-  React.useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const r = await getRole();
-        setRole(r);
-      } else {
-        setRole("signed out");
-      }
-    });
-  }, []);
-
-  async function getRole() {
-    let docRef = doc(db, "Tutors", auth.currentUser.uid);
-    let docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) return "tutor";
-    docRef = doc(db, "Students", auth.currentUser.uid);
-    docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) return "student";
-    else return "other";
-  }
   return (
-    <div>
-      {role === "student" && (
-        <Box sx={{ width: "75%" }}>
-          <Calendar />
-        </Box>
-      )}
-      {role === "tutor" && <Navigate to="/tutors" />}
-      {(role === "signed out" || role === "other") && <Navigate to="/login" />}
-    </div>
+    <ThemeProvider theme={theme}>
+      <Nav></Nav>
+      <Container>
+        <Grid container spacing={5} marginTop={5} direction="column">
+          <Grid item xs={4}>
+            <Calendar />
+          </Grid>
+        </Grid>
+      </Container>
+    </ThemeProvider>
   );
 }
 export default StudentPage;

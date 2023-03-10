@@ -1,63 +1,41 @@
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
-import * as React from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth, db } from "./firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { useState } from "react";
+import { signOut } from "firebase/auth";
+import { auth } from "./firebase";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
+import MenuIcon from "@mui/icons-material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Link from "@mui/material/Link";
-import Alert from "@mui/material/Alert";
+import logo from "../Ring A Bell image.png";
+
 export default function Nav() {
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const photoURL = sessionStorage.getItem("photoURL");
+  const role = sessionStorage.getItem("role");
   const open = Boolean(anchorEl);
-  const [role, setRole] = React.useState(null);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  React.useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // const p = await isTeacher();
-        // console.log(isTeacher());
-        // if (p) setRole("tutor");
-        // else setRole("student");
-        const r = await getRole();
-        setRole(r);
-      } else {
-        setRole("signed out");
-      }
-    });
-  }, []);
-
-  async function getRole() {
-    let docRef = doc(db, "Tutors", auth.currentUser.uid);
-    let docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) return "tutor";
-    docRef = doc(db, "Students", auth.currentUser.uid);
-    docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) return "student";
-    //uh oh
-    else return "other";
-  }
 
   const handleClose = () => {
     setAnchorEl(null);
   };
+
   const handleLogout = () => {
     setAnchorEl(null);
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("displayName");
+    sessionStorage.removeItem("bio");
     signOut(auth);
   };
-  const UserMenu = (props) => {
-    const user = auth.currentUser;
-    if (user) {
+
+  const UserMenu = () => {
+    if (role) {
       // User is signed in.
       return (
         <Menu
@@ -73,11 +51,9 @@ export default function Nav() {
             <MenuItem onClick={handleClose}>My account</MenuItem>
           </Link>
           <Link href={"" + role + "s"}>
-            <MenuItem onClick={handleClose}>
-              {role === "tutor" ? "Tutor" : "Student"} Calendar
-            </MenuItem>
+            <MenuItem onClick={handleClose}>{role + ""} calendar</MenuItem>
           </Link>
-          <Link href="/login">
+          <Link href="/">
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Link>
         </Menu>
@@ -95,10 +71,7 @@ export default function Nav() {
           }}
         >
           <Link href="/">
-            <MenuItem onClick={handleClose}>Sign up</MenuItem>
-          </Link>
-          <Link href="/login">
-            <MenuItem onClick={handleClose}>Login</MenuItem>
+            <MenuItem onClick={handleClose}>Sign In</MenuItem>
           </Link>
         </Menu>
       );
@@ -108,7 +81,13 @@ export default function Nav() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <img src={logo} alt="logo" width={100} />
+          <Typography
+            variant="h5"
+            component="div"
+            color="whitesmoke"
+            sx={{ flexGrow: 1 }}
+          >
             Ring A Bell
           </Typography>
           <IconButton
@@ -119,16 +98,18 @@ export default function Nav() {
             onClick={handleMenu}
             color="inherit"
           >
-            <AccountCircle />
+            <MenuIcon />
           </IconButton>
+          <img
+            style={{ borderRadius: "50%" }}
+            src={photoURL}
+            alt="loading"
+            width="55"
+            referrerPolicy="no-referrer"
+          />
           <UserMenu></UserMenu>
         </Toolbar>
       </AppBar>
-      {(role === "tutor" || role === "student") && (
-        <Alert severity="success">
-          You are currently logged in as a {role}
-        </Alert>
-      )}
     </Box>
   );
 }
