@@ -3,8 +3,8 @@
 
 1. It should be fine to delete /trash/ I think I was using it as a backup
 2. I don't know what plans you have with this project but I highly recommend starting rewriting anything that is confusing to use.
-this was my first react project so I made questionable design choices and I didn't write it with the intention for anyone else to use the code
-for example, it may be hard editing/building off of the calendar component because its built on top of an outside package
+This was my first react project so I made questionable design choices and I didn't write it with the intention for anyone else to use the code.
+For example, it may be hard editing/building off of the calendar component because its built on top of an outside package
 3. To get it started, fill in firebaseConfig in /components/firebase.js accordingly
 run 
 ### `npm install`
